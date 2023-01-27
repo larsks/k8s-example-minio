@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    spec:
+      containers:
+      - name: minio
+        image: quay.io/minio/minio:latest
+        command:
+          - minio
+          - server
+          - /data
+          - --console-address=:9090
+        volumeMounts:
+        - mountPath: /data
+          name: minio-data
+        ports:
+          - containerPort: 9000
+            name: api
+          - containerPort: 9090
+            name: console
+        envFrom:
+          - secretRef:
+              name: minio-creds
+      volumes:
+      - name: minio-data
+        persistentVolumeClaim:
+          claimName: minio-data
